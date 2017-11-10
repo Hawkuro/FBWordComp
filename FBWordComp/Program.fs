@@ -4,6 +4,7 @@ open System
 open System.Configuration
 open System.IO
 open FSharp.Data
+open System.Collections.Generic
 
 let (|UserDiv|_|) (node:HtmlNode) =
     if node.HasClass("message")
@@ -42,12 +43,26 @@ let getUserMessages userName (file:FileInfo) =
     getUserMessages (thread.Elements(["div";"p"])) []
     //thread.Elements(["div";"p"]) |> List.map (fun e -> e.Name())
 
-let wordCounts (words:Set<string>) str =
-    ["a",1;"b",2]
+let wordCounts (words:Set<string>) (str:string) =
+    let countMap = new Dictionary<string, int>()
+    words |> Set.iter (fun w -> countMap.Add(w,0))
+
+    let increment word = countMap.[word] <- countMap.[word]+1
+
+    str.Split(null)
+    |> Array.collect (fun w -> w.Split('/','-'))
+    |> Array.map (fun w -> w.Trim('.',',',':',';','/','*','#','"','!','?','\'','+','-').ToLower())
+    |> Array.iter ( fun word -> if words |> Set.contains word then increment word )
+
+    countMap
+    |> Seq.map (fun kvp -> kvp.Key, kvp.Value)
+
 
 let percentOfTotal (counts: (string*int) list) =
     let total = counts |> List.sumBy snd |> decimal
-    counts |> List.map (fun (word,count) -> word, (decimal (100*count))/total)
+    if total = 0m
+    then counts |> List.map (fun (word,count) -> word, 0m)
+    else counts |> List.map (fun (word,count) -> word, (decimal (100*count))/total)
 
 [<EntryPoint>]
 let main argv = 
@@ -58,7 +73,7 @@ let main argv =
     let messageThreads = messageFolder.GetFiles()
     let userName, words =
         match Array.toList argv with
-        | head::tail -> head, Set.ofList tail
+        | head::tail -> head, tail |> List.map (fun w -> w.ToLower()) |> Set.ofList 
         | _ -> failwith "missing arguments" 
 
 //    messageThreads
