@@ -65,17 +65,14 @@ let main argv =
 //    |> Array.map (fun f -> f.Name)
 //    |> printfn "%A" 
 
-    let results =
-        messageThreads
-        |> Seq.ofArray
-        |> Seq.collect (getUserMessages userName)
-        |> Seq.collect (wordCounts words)
-        |> Seq.groupBy fst 
-        |> Seq.map (fun (word, counts) -> word, counts |> Seq.sumBy snd)
-        |> Seq.toList
-        |> percentOfTotal
-
-    results
+    messageThreads
+    |> Seq.ofArray
+    |> Seq.collect (getUserMessages userName)
+    |> Seq.collect (wordCounts words)
+    |> Seq.groupBy fst 
+    |> Seq.map (fun (word, counts) -> word, counts |> Seq.sumBy snd)
+    |> Seq.toList
+    |> percentOfTotal
     |> Seq.iter (fun c -> c ||> printfn "%s: %.2f%%")
 
     System.Console.ReadLine () |> ignore
