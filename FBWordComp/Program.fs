@@ -42,6 +42,13 @@ let getUserMessages userName (file:FileInfo) =
     getUserMessages (thread.Elements(["div";"p"])) []
     //thread.Elements(["div";"p"]) |> List.map (fun e -> e.Name())
 
+let wordCounts (words:Set<string>) str =
+    ["a",1;"b",2]
+
+let percentOfTotal (counts: (string*int) list) =
+    let total = counts |> List.sumBy snd |> decimal
+    counts |> List.map (fun (word,count) -> word, (decimal (100*count))/total)
+
 [<EntryPoint>]
 let main argv = 
     printfn "%A" argv
@@ -62,9 +69,14 @@ let main argv =
         messageThreads
         |> Seq.ofArray
         |> Seq.collect (getUserMessages userName)
+        |> Seq.collect (wordCounts words)
+        |> Seq.groupBy fst 
+        |> Seq.map (fun (word, counts) -> word, counts |> Seq.sumBy snd)
         |> Seq.toList
+        |> percentOfTotal
 
-    results |> printfn "%A"
+    results
+    |> Seq.iter (fun c -> c ||> printfn "%s: %.2f%%")
 
     System.Console.ReadLine () |> ignore
     0 // return an integer exit code
