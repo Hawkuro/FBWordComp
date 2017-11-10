@@ -41,7 +41,6 @@ let getUserMessages userName (file:FileInfo) =
         | _ -> failwith ("file failed to parse: "+file.FullName)
 
     getUserMessages (thread.Elements(["div";"p"])) []
-    //thread.Elements(["div";"p"]) |> List.map (fun e -> e.Name())
 
 let wordCounts (words:Set<string>) (str:string) =
     let countMap = new Dictionary<string, int>()
@@ -66,7 +65,7 @@ let percentOfTotal (counts: (string*int) list) =
 
 [<EntryPoint>]
 let main argv = 
-    printfn "%A" argv
+//    printfn "%A" argv
 
     let FBDataFolder = ConfigurationManager.AppSettings.Item("FBDataFolder") |> DirectoryInfo
     let messageFolder = FBDataFolder.GetDirectories() |> Array.find (fun d -> d.Name = "messages")
@@ -75,10 +74,6 @@ let main argv =
         match Array.toList argv with
         | head::tail -> head, tail |> List.map (fun w -> w.ToLower()) |> Set.ofList 
         | _ -> failwith "missing arguments" 
-
-//    messageThreads
-//    |> Array.map (fun f -> f.Name)
-//    |> printfn "%A" 
 
     messageThreads
     |> Seq.ofArray
